@@ -4,30 +4,42 @@ var fs = require('fs')
 var request = require('request')
 var through = require('through2')
 var ndjson = require('ndjson')
+var levelup = require('levelup')
+var afterAll = require('after-all')
 
-var token = process.env.GH_TOKEN
+var db = levelup('./db', {valueEncoding: 'json'})
 
+var token = process.env.SHOUTOUT_GH_TOKEN
 var API_URL = 'https://api.github.com'
 
-var issueStream = createPaginatedStream('/orgs/hoodiehq/issues?state=all&filter=all') // &since=2016-04-08T00:00:00
+var next = afterAll(function (err) {
+  if (err) return console.error(err)
+  console.log('done')
+})
 
-issueStream
-  .pipe(ndjson.stringify())
-  .pipe(fs.createWriteStream('issue.ndjson'))
-  // .on('data', function (issue) {
-  //   // issue.title
-  //   console.log(issue.user.login)
-  //   console.log(issue.pull_request)
-  //   console.log(Object.keys(issue))
-  // })
+var issueStream = createPaginatedStream('/orgs/hoodiehq/issues?state=all&filter=all&since=2016-04-01T00:00:00Z')
+// var repoStream = createPaginatedStream('/orgs/hoodiehq/repos')
+
+issueStream.on('data', function (repo) {
+  if (repo.pull_request) {
+    requestGitHub(repo.pull_request.url, next(function (pr) {
+      // TODO: Check if issue was actually merged recently. "merged_at" before since
+      if (pr.merged_by) createEvent({type: 'pr_merged', user: pr.merged_by, pr: pr})
+      if (pr.merged) createEvent({type: 'pr_landed', user: pr.user, pr: pr})
+      // console.log(Object.keys(pr))
+    }))
+  }
+})
+
+issueStream.on('end', next())
 
 function requestGitHub (route, cb) {
-  var u = API_URL + route
+  if (route[0] === '/') route = API_URL + route
   var headers = {
     'Authorization': 'token ' + token,
     'User-Agent': 'nodejs'
   }
-  request.get({url: u, json: true, headers: headers}, function (err, getResp, data) {
+  request.get({url: route, json: true, headers: headers}, function (err, getResp, data) {
     if (err) {
       console.error(err)
       return process.exit(1)
@@ -62,4 +74,14 @@ function createPaginatedStream (route) {
       }
     })
   }
+}
+
+var id = 0
+
+function createEvent (event) {
+  // console.log(JSON.stringify(event))
+  console.log(event.type, event.user.login)
+  id++
+  var key = event.user.login + '/' + event.type + '/' + id
+  db.put(key, event, next())
 }
