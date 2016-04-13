@@ -16,13 +16,16 @@ var next = afterAll(function (err) {
   console.log('done')
 })
 
-var issueStream = createPaginatedStream('/orgs/hoodiehq/issues?state=all&filter=all&since=2016-04-01T00:00:00Z')
+var since = new Date('2016-04-01T00:00:00Z')
+
+var issueStream = createPaginatedStream('/orgs/hoodiehq/issues?state=all&filter=all&since=' + since.toISOString())
 
 issueStream.on('data', function (issue) {
   createPaginatedStream(issue.comments_url)
     .on('data', function (comment) {
-      // TODO: Filter events to only use the ones after the since date.
-      createEvent({type: 'comment', user: comment.user, comment: comment})
+      if (new Date(comment.created_at) >= since) {
+        createEvent({type: 'comment', user: comment.user, comment: comment, issue: issue})
+      }
     })
     .on('end', next())
   if (issue.pull_request) {

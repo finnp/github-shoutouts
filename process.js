@@ -38,6 +38,10 @@ function getUserSummary (user, events) {
     text += '\n- merged ' + events['pr_merged'].length + ' pull requests'
   }
   if (events['comment']) {
+    var reviewed = events['comment'].filter(function (event) {
+      return event.issue.pull_request && event.comment.body.indexOf('LGTM') > -1
+    })
+    if (reviewed.length > 0) text += '\n- reviewed ' + reviewed.length + ' pull requests'
     text += '\n- commented ' + events['comment'].length + ' times'
   }
   return text + '\n'
