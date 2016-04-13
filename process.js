@@ -37,5 +37,8 @@ function getUserSummary (user, events) {
   if (events['pr_merged']) {
     text += '\n- merged ' + events['pr_merged'].length + ' pull requests'
   }
+  if (events['comment']) {
+    text += '\n- commented ' + events['comment'].length + ' times'
+  }
   return text + '\n'
 }
