@@ -1,10 +1,9 @@
 var url = require('url')
-var fs = require('fs')
 
 var request = require('request')
 var through = require('through2')
 var ndjson = require('ndjson')
-var levelup = require('levelup')
+var levelup = require('level')
 var afterAll = require('after-all')
 
 var db = levelup('./db', {valueEncoding: 'json'})
@@ -18,11 +17,16 @@ var next = afterAll(function (err) {
 })
 
 var issueStream = createPaginatedStream('/orgs/hoodiehq/issues?state=all&filter=all&since=2016-04-01T00:00:00Z')
-// var repoStream = createPaginatedStream('/orgs/hoodiehq/repos')
 
-issueStream.on('data', function (repo) {
-  if (repo.pull_request) {
-    requestGitHub(repo.pull_request.url, next(function (pr) {
+issueStream.on('data', function (issue) {
+  createPaginatedStream(issue.comments_url)
+    .on('data', function (comment) {
+      // TODO: Filter events to only use the ones after the since date.
+      createEvent({type: 'comment', user: comment.user, comment: comment})
+    })
+    .on('end', next())
+  if (issue.pull_request) {
+    requestGitHub(issue.pull_request.url, next(function (pr) {
       // TODO: Check if issue was actually merged recently. "merged_at" before since
       if (pr.merged_by) createEvent({type: 'pr_merged', user: pr.merged_by, pr: pr})
       if (pr.merged) createEvent({type: 'pr_landed', user: pr.user, pr: pr})
@@ -30,7 +34,6 @@ issueStream.on('data', function (repo) {
     }))
   }
 })
-
 issueStream.on('end', next())
 
 function requestGitHub (route, cb) {
