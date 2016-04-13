@@ -30,9 +30,10 @@ issueStream.on('data', function (issue) {
     .on('end', next())
   if (issue.pull_request) {
     requestGitHub(issue.pull_request.url, next(function (pr) {
-      // TODO: Check if issue was actually merged recently. "merged_at" before since
-      if (pr.merged_by) createEvent({type: 'pr_merged', user: pr.merged_by, pr: pr})
-      if (pr.merged) createEvent({type: 'pr_landed', user: pr.user, pr: pr})
+      if (pr.merged_at && new Date(pr.merged_at) >= since) {
+        if (pr.merged_by) createEvent({type: 'pr_merged', user: pr.merged_by, pr: pr})
+        if (pr.merged) createEvent({type: 'pr_landed', user: pr.user, pr: pr})
+      }
       // console.log(Object.keys(pr))
     }))
   }
