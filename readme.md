@@ -6,6 +6,8 @@ Install with
 npm install -g github-shoutouts
 ```
 
+Create a [GitHub token](https://github.com/settings/tokens) and export it as the env variable `SHOUTOUT_GH_TOKEN`.
+
 Run
 ```
 github-shoutouts <yourorg>
