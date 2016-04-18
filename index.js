@@ -7,12 +7,17 @@ var spinner = require('char-spinner')
 var datePrompt = require('date-prompt')
 var moment = require('moment')
 var pump = require('pump')
+var temp = require('temp')
 
 var prCounts = require('./lib/pr-counts')
 var fetch = require('./lib/fetch')
 var summarize = require('./lib/summarize')
 
-var db = levelup('./db', {valueEncoding: 'json'})
+temp.track()
+
+var tempDir = temp.mkdirSync('db')
+
+var db = levelup(tempDir, {valueEncoding: 'json'})
 
 if (process.argv.length <= 2) {
   console.log('usage: github-shoutouts <github-org> [out-file-name]')
@@ -46,7 +51,7 @@ function run (since) {
         fs.createWriteStream(outFile),
         function (err) {
           if (err) return onError(err)
-          console.log('Done. Written to ' + outFile)
+          console.log('Done. Output written to ' + outFile)
           process.exit()
         }
       )

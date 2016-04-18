@@ -1,18 +1,15 @@
 # github-shoutouts
 [![NPM](https://nodei.co/npm/github-shoutouts.png)](https://nodei.co/npm/github-shoutouts/)
 
+Install with
 ```
-node index.js # fetches data
-node process.js # outputs markdown
+npm install -g github-shoutouts
 ```
 
+Run
+```
+github-shoutouts <yourorg>
+```
 
-https://github.com/derhuerst/date-prompt
-
-// limit search: once per user, do not query "known" users (we can only do 30 requests per min)
-// function checkFirstPR (user, id, cb) {
-//   requestGitHub('/search/issues?q=type:pr+author:%22' + user + '%22&sort=created&order=asc&per_page=1', function (response) {
-//     if (user === 'sjnorth') console.log(response)
-//     cb(!!(response.items && response.items[0] && response.items[0].id === id))
-//   })
-// }
+After that you will be asked to select a date from which point on the summary
+is going to be created.
