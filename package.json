@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "list contributions for your github organisation",
   "main": "index.js",
+  "bin": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,8 +23,13 @@
   "homepage": "https://github.com/finnp/github-shoutouts#readme",
   "dependencies": {
     "after-all": "2.0.2",
+    "char-spinner": "1.0.1",
+    "date-prompt": "0.6.0",
     "level": "1.4.0",
+    "moment": "2.13.0",
     "ndjson": "1.4.3",
+    "pump": "1.0.1",
+    "read-only-stream": "2.0.0",
     "request": "2.70.0",
     "through2": "2.0.1"
   }
