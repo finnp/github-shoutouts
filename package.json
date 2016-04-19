@@ -1,6 +1,6 @@
 {
   "name": "github-shoutouts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "list contributions for your github organisation",
   "main": "index.js",
   "bin": "index.js",
